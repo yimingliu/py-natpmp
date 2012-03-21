@@ -26,7 +26,7 @@ def main():
             protocol = NATPMP.NATPMP_PROTOCOL_UDP
         elif name == "-l":
             lifetime = int(val)
-        elif name == "g":
+        elif name == "-g":
             gateway = val
 
     if not gateway:
