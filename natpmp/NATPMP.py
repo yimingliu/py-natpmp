@@ -202,8 +202,7 @@ def get_gateway_addr():
        It does not guarantee correct results.
        
        This function requires the presence of
-       netstat on the path on POSIX and NT.  It requires ip on
-       Linux.
+       netstat on the path on POSIX and NT.
     """
     addr = ""
     shell_command = 'netstat -rn'
