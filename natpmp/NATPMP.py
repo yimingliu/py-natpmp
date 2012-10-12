@@ -17,6 +17,7 @@ http://files.dns-sd.org/draft-cheshire-nat-pmp.txt
 Requires Python 2.3 or later.
 Tested on Python 2.5, 2.6 against Apple AirPort Express.
 
+0.2.2 - changed gateway autodetect, per github issue #1.  thanks to jirib
 0.2 - changed useException to use_exception, responseDataClass to response_data_class parameters in function calls for consistency
 0.1 - repackaged via setuptools.  Fixed major bug in gateway detection.  Experimental gateway detection support for Windows 7.  Python 2.6 testing.
 0.0.1.2 - NT autodetection code.  Thanks to roee shlomo for the gateway detection regex!
@@ -207,10 +208,7 @@ def get_gateway_addr():
     addr = ""
     shell_command = 'netstat -rn'
     if os.name == "posix":
-        pattern = re.compile('default\s+([\w.:]+)\s+\w')
-        if "linux" in sys.platform:
-            shell_command = "ip route show"
-            pattern = re.compile('default via\s+([\w.:]+)\s+\w')
+        pattern = re.compile('(?:default|0\.0\.0\.0|::/0)\s+([\w\.:]+)\s+.*UG')
     elif os.name == "nt":
         if platform.version().startswith("6.1"):
             pattern = re.compile(".*?0.0.0.0[ ]+0.0.0.0[ ]+(.*?)[ ]+?.*?\n")
