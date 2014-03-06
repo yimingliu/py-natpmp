@@ -16,18 +16,10 @@ http://files.dns-sd.org/draft-cheshire-nat-pmp.txt
 
 Requires Python 2.3 or later.
 Tested on Python 2.5, 2.6 against Apple AirPort Express.
-
-0.2.2 - changed gateway autodetect, per github issue #1.  thanks to jirib
-0.2 - changed useException to use_exception, responseDataClass to response_data_class parameters in function calls for consistency
-0.1 - repackaged via setuptools.  Fixed major bug in gateway detection.  Experimental gateway detection support for Windows 7.  Python 2.6 testing.
-0.0.1.2 - NT autodetection code.  Thanks to roee shlomo for the gateway detection regex!
-0.0.1.1 - Removed broken mutex code
-0.0.1   - Initial release
-
 """
 
-__version__ = "0.2"
-__license__ = """Copyright (c) 2008-2010, Yiming Liu, All rights reserved.
+__version__ = "0.2.3"
+__license__ = """Copyright (c) 2008-2014, Yiming Liu, All rights reserved.
 
 Redistribution and use in source and binary forms, with or without modification,
 are permitted provided that the following conditions are met:
@@ -153,6 +145,8 @@ class PublicAddressResponse(NATPMPResponse):
        ip_int contains the same in the original 4-byte unsigned int.
     """
     def __init__(self, bytes):
+        if (len(bytes) > 12):
+            bytes = bytes[:12]
         version, opcode, result, sec_since_epoch, self.ip_int = struct.unpack("!BBHII", bytes)
         NATPMPResponse.__init__(self, version, opcode, result, sec_since_epoch)
         self.ip = socket.inet_ntoa(bytes[8:8+4])
@@ -170,6 +164,8 @@ class PortMapResponse(NATPMPResponse):
        for details).
     """
     def __init__(self, bytes):
+        if len(bytes) > 16:
+            bytes = bytes[:16]
         version, opcode, result, sec_since_epoch, self.private_port, self.public_port, self.lifetime = struct.unpack('!BBHIHHI', bytes)
         NATPMPResponse.__init__(self, version, opcode, result, sec_since_epoch)
     
@@ -262,7 +258,7 @@ def get_public_address(gateway_ip=None, retry=9):
         gateway_ip = get_gateway_addr()
     addr = None
     addr_request = PublicAddressRequest()
-    addr_response = send_request_with_retry(gateway_ip, addr_request, response_data_class=PublicAddressResponse, retry=retry)
+    addr_response = send_request_with_retry(gateway_ip, addr_request, response_data_class=PublicAddressResponse, retry=retry, response_size=12)
     if addr_response.result != 0:
         #sys.stderr.write("NAT-PMP error %d: %s\n" % (addr_response.result, error_str(addr_response.result)))
         #sys.stderr.flush()
@@ -349,13 +345,13 @@ def read_response(gateway_socket, timeout, responseSize=16):
         data,source_addr = resp_socket.recvfrom(responseSize)
     return data,source_addr
 
-def send_request_with_retry(gateway_ip, request, response_data_class=None, retry=9):
+def send_request_with_retry(gateway_ip, request, response_data_class=None, retry=9, response_size=16):
     gateway_socket = get_gateway_socket(gateway_ip)
     n = 1
     data = ""
     while n <= retry and not data:
         send_request(gateway_socket, request)
-        data,source_addr = read_response(gateway_socket, n * request.retry_increment)
+        data,source_addr = read_response(gateway_socket, n * request.retry_increment, responseSize=response_size)
         if source_addr[0] != gateway_ip or source_addr[1] != NATPMP_PORT:
             data = "" # discard data if source mismatch, as per specification
         n += 1
