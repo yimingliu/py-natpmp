@@ -11,7 +11,7 @@ Provides functions to interact with NAT-PMP gateways implementing version 0 of t
       classifiers=[], # Get strings from http://pypi.python.org/pypi?%3Aaction=list_classifiers
       keywords='NAT-PMP NAT networking port port_forwarding port_mapping AirPort Apple',
       author='Yiming Liu',
-      author_email='yiming@yimingliu.com',
+      author_email='',
       url='http://yimingliu.com',
       license='BSD',
       packages=find_packages(exclude=['ez_setup', 'examples', 'tests']),
