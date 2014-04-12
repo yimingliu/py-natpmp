@@ -341,7 +341,10 @@ def read_response(gateway_socket, timeout, responseSize=16):
     rlist, wlist, xlist = select.select([gateway_socket], [], [], timeout)
     if rlist:
         resp_socket = rlist[0]
-        data,source_addr = resp_socket.recvfrom(responseSize)
+        try:
+            data, source_addr = resp_socket.recvfrom(responseSize)
+        except Exception:
+            return None, None
     return data,source_addr
 
 def send_request_with_retry(gateway_ip, request, response_data_class=None, retry=9, response_size=16):
@@ -351,7 +354,7 @@ def send_request_with_retry(gateway_ip, request, response_data_class=None, retry
     while n <= retry and not data:
         send_request(gateway_socket, request)
         data,source_addr = read_response(gateway_socket, n * request.retry_increment, responseSize=response_size)
-        if source_addr[0] != gateway_ip or source_addr[1] != NATPMP_PORT:
+        if data is None or source_addr[0] != gateway_ip or source_addr[1] != NATPMP_PORT:
             data = "" # discard data if source mismatch, as per specification
         n += 1
     if n >= retry and not data:
@@ -364,5 +367,5 @@ def send_request_with_retry(gateway_ip, request, response_data_class=None, retry
 if __name__ == "__main__":
     addr = get_public_address()
     map_resp = map_tcp_port(62001, 62001)
-    print addr
-    print map_resp.__dict__
+    print (addr)
+    print (map_resp.__dict__)
