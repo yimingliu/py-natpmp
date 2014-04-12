@@ -10,7 +10,7 @@ except ImportError:
 
 def main():
     if len(sys.argv) < 3:
-        print "usage: natpmp-client.py [-u] [-l lifetime] [-g gateway_addr] public_port private_port"
+        print("usage: natpmp-client.py [-u] [-l lifetime] [-g gateway_addr] public_port private_port")
         sys.exit(-1)
 
     opts, args = getopt.getopt(sys.argv[1:], "ul:g:")    
