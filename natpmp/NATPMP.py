@@ -153,7 +153,7 @@ class PublicAddressResponse(NATPMPResponse):
         #self.ip  = socket.inet_ntoa(self.ip_bytes)
 
     def __str__(self):
-        return "PublicAddressResponse: version %d, opcode %d (%d), result %d, ssec %d, ip %s" % (self.version, self.opcode, self.result, self.sec_since_epoch, self.ip)
+        return "PublicAddressResponse: version %d, opcode %d, result %d, ssec %d, ip %s" % (self.version, self.opcode, self.result, self.sec_since_epoch, self.ip)
 
 class PortMapResponse(NATPMPResponse):
     """Represents a NAT-PMP response from the local gateway to a
