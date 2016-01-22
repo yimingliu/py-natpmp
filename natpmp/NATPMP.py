@@ -21,18 +21,10 @@ For more information on NAT-PMP, see the NAT-PMP draft specification:
 
 http://files.dns-sd.org/draft-cheshire-nat-pmp.txt
 
-Requires Python 2.3 or later.
-Tested on Python 2.5, 2.6 against Apple AirPort Express.
-
-Coinbend change log:
-* Changed gateway auto-detection to use netifaces which makes
-this library more cross-platform.
-* Added an easy to use port forwarding function with the same
-interface as that seen in the UPnP module.
 """
 
-__version__ = "0.2.3"
-__license__ = """Copyright (c) 2008-2014, Yiming Liu, All rights reserved.
+__version__ = "0.2.4"
+__license__ = """Copyright (c) 2008-2016, Yiming Liu, All rights reserved.
 
 Redistribution and use in source and binary forms, with or without modification,
 are permitted provided that the following conditions are met:
