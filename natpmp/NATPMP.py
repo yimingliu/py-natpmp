@@ -55,48 +55,36 @@ NATPMP_PORT = 5351
 
 NATPMP_RESERVED_VAL = 0
 
-NATPMP_PROTOCOL_UDP = 1
-NATPMP_PROTOCOL_TCP = 2
+OP_UDP = 1
+OP_TCP = 2
 
-NATPMP_GATEWAY_NO_VALID_GATEWAY = -10
-NATPMP_GATEWAY_NO_SUPPORT = -11
-NATPMP_GATEWAY_CANNOT_FIND = -12
+class Result:
+    SUCCESS = 0  # Success
+    UNSUPPORTED_VERSION = 1  # Unsupported Version
+    NOT_AUTHORIZED = 2  # Not Authorized/Refused/NATPMP turned off
+    NETWORK_FAILURE = 3  # Network Failure
+    OUT_OF_RESOURCES = 4  # can not create more mappings
+    UNSUPPORTED_OP = 5  # not a supported opcode
+    # all remaining results are fatal errors
+    GATEWAY_NO_VALID_GATEWAY = -10
+    GATEWAY_NO_SUPPORT = -11
+    GATEWAY_CANNOT_FIND = -12
 
-NATPMP_RESULT_SUCCESS = 0  # Success
-NATPMP_RESULT_UNSUPPORTED_VERSION = 1  # Unsupported Version
-NATPMP_RESULT_NOT_AUTHORIZED = 2  # Not Authorized/Refused/NATPMP turned off
-NATPMP_RESULT_NETWORK_FAILURE = 3  # Network Failure
-NATPMP_RESULT_OUT_OF_RESOURCES = 4  # can not create more mappings
-NATPMP_RESULT_UNSUPPORTED_OPERATION = 5  # not a supported opcode
-# all remaining results are fatal errors
+    MSG_DICT = {
+            SUCCESS: "Success.",
 
-NATPMP_ERROR_DICT = {
-                NATPMP_RESULT_SUCCESS: "No error.",
-                NATPMP_RESULT_UNSUPPORTED_VERSION: "The protocol version "
-                                                   "specified is unsupported.",
-                NATPMP_RESULT_NOT_AUTHORIZED: "The operation was refused.  "
-                                              "NAT-PMP may be turned off on "
-                                              "gateway.",
-                # network failure
-                NATPMP_RESULT_NETWORK_FAILURE: "There was a network failure.  "
-                                               "The gateway may not have an IP "
-                                               "address.",
-                # can not create more mappings
-                NATPMP_RESULT_OUT_OF_RESOURCES: "The NAT-PMP gateway is out of "
-                                                "resources and cannot create "
-                                                "more mappings.",
-                # not a supported opcode
-                NATPMP_RESULT_UNSUPPORTED_OPERATION: "The NAT-PMP gateway does "
-                                                     "not support this "
-                                                     "operation",
-                NATPMP_GATEWAY_NO_SUPPORT: "The gateway does not support "
-                                           "NAT-PMP",
-                NATPMP_GATEWAY_NO_VALID_GATEWAY: "No valid gateway address was "
-                                                 "specified.",
-                NATPMP_GATEWAY_CANNOT_FIND: "Cannot automatically determine "
-                                            "gateway address.  Must specify "
-                                            "manually."
-              }
+            UNSUPPORTED_VERSION: "The protocol version specified is unsupported.",
+            NOT_AUTHORIZED: "The operation was refused. NAT-PMP may be turned off on gateway.",
+            NETWORK_FAILURE: "There was a network failure. The gateway may not have an IP address.",
+            OUT_OF_RESOURCES: "The NAT-PMP gateway is out of resources "
+            "and cannot create more mappings.",
+            UNSUPPORTED_OP: "The NAT-PMP gateway does not support this operation.",
+
+            GATEWAY_NO_SUPPORT: "The gateway does not support NAT-PMP",
+            GATEWAY_NO_VALID_GATEWAY: "No valid gateway address was specified.",
+            GATEWAY_CANNOT_FIND: "Cannot automatically determine "
+            "gateway address.  Must specify manually."
+            }
 
 
 class NATPMPRequest(object):
@@ -270,12 +258,12 @@ def get_gateway_addr():
                 pattern = re.compile(".*?Default Gateway:[ ]+(.*?)\n")
         system_out = os.popen(shell_command, 'r').read()
         if not system_out:
-            raise NATPMPNetworkError(NATPMP_GATEWAY_CANNOT_FIND,
-                                     error_str(NATPMP_GATEWAY_CANNOT_FIND))
+            raise NATPMPNetworkError(Result.GATEWAY_CANNOT_FIND,
+                                     error_str(Result.GATEWAY_CANNOT_FIND))
         match = pattern.search(system_out)
         if not match:
-            raise NATPMPNetworkError(NATPMP_GATEWAY_CANNOT_FIND,
-                                     error_str(NATPMP_GATEWAY_CANNOT_FIND))
+            raise NATPMPNetworkError(Result.GATEWAY_CANNOT_FIND,
+                                     error_str(Result.GATEWAY_CANNOT_FIND))
         addr = match.groups()[0].strip()
         return addr
 
@@ -284,7 +272,7 @@ def error_str(result_code):
     """Takes a numerical error code and returns a human-readable
        error string.
     """
-    result = NATPMP_ERROR_DICT.get(result_code)
+    result = Result.MSG_DICT.get(result_code)
     if not result:
         result = "Unknown fatal error."
     return result
@@ -298,8 +286,8 @@ def get_gateway_socket(gateway):
        e.g. addr = get_gateway_socket('10.0.1.1')
     """
     if not gateway:
-        raise NATPMPNetworkError(NATPMP_GATEWAY_NO_VALID_GATEWAY,
-                                 error_str(NATPMP_GATEWAY_NO_VALID_GATEWAY))
+        raise NATPMPNetworkError(Result.GATEWAY_NO_VALID_GATEWAY,
+                                 error_str(Result.GATEWAY_NO_VALID_GATEWAY))
     response_socket = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
     response_socket.setblocking(0)
     response_socket.connect((gateway, NATPMP_PORT))
@@ -356,7 +344,7 @@ def map_tcp_port(public_port, private_port, lifetime=3600, gateway_ip=None,
             use_exception - throw an exception if an error result is
                            received from the gateway.  Defaults to True.
     """
-    return map_port(NATPMP_PROTOCOL_TCP, public_port, private_port, lifetime,
+    return map_port(OP_TCP, public_port, private_port, lifetime,
                     gateway_ip=gateway_ip, retry=retry,
                     use_exception=use_exception)
 
@@ -379,7 +367,7 @@ def map_udp_port(public_port, private_port, lifetime=3600, gateway_ip=None,
             use_exception - throw an exception if an error result is
                             received from the gateway.  Defaults to True.
     """
-    return map_port(NATPMP_PROTOCOL_UDP, public_port, private_port, lifetime,
+    return map_port(OP_UDP, public_port, private_port, lifetime,
                     gateway_ip=gateway_ip, retry=retry,
                     use_exception=use_exception)
 
@@ -389,7 +377,7 @@ def map_port(protocol, public_port, private_port, lifetime=3600,
     """A function to map public_port to private_port of protocol.
        Returns the complete response on success.
        
-            protocol - NATPMP_PROTOCOL_UDP or NATPMP_PROTOCOL_TCP
+            protocol - OP_UDP or OP_TCP
             public_port - the public port of the mapping requested
             private_port - the private port of the mapping requested
             lifetime - the duration of the mapping in seconds.
@@ -403,9 +391,8 @@ def map_port(protocol, public_port, private_port, lifetime=3600,
                             is received from the gateway.  Defaults to True.
     """
 
-    if protocol not in [NATPMP_PROTOCOL_UDP, NATPMP_PROTOCOL_TCP]:
-        raise ValueError("Must be either NATPMP_PROTOCOL_UDP or "
-                         "NATPMP_PROTOCOL_TCP")
+    if protocol not in [OP_UDP, OP_TCP]:
+        raise ValueError("Invalid protocol: {}. Must be either OP_UDP or OP_TCP".format(protocol))
 
     if gateway_ip is None:
         gateway_ip = get_gateway_addr()
@@ -466,8 +453,8 @@ def send_request_with_retry(gateway_ip, request, response_data_class=None,
         timeout *= 2
 
     if n >= retry and not data:
-        raise NATPMPUnsupportedError(NATPMP_GATEWAY_NO_SUPPORT,
-                                     error_str(NATPMP_GATEWAY_NO_SUPPORT))
+        raise NATPMPUnsupportedError(Result.GATEWAY_NO_SUPPORT,
+                                     error_str(Result.GATEWAY_NO_SUPPORT))
 
     if data and response_data_class:
         data = response_data_class(data)
