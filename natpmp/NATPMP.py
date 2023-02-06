@@ -105,6 +105,7 @@ class NATPMPRequest(object):
        
        Other requests are derived from NATPMPRequest.
     """
+
     initial_timeout = 0.250  # seconds
 
     def __init__(self, version, opcode):
@@ -163,7 +164,6 @@ class NATPMPResponse(object):
                                                        self.result,
                                                        self.sec_since_epoch)
 
-
 class PublicAddressResponse(NATPMPResponse):
     """Represents a NAT-PMP response from the local gateway to a
        public-address request.  It has one additional 4-byte field
@@ -172,9 +172,11 @@ class PublicAddressResponse(NATPMPResponse):
        The member variable ip contains the Python-friendly string form, while
        ip_int contains the same in the original 4-byte unsigned int.
     """
+
+    SIZE = 12
+
     def __init__(self, data):
-        if len(data) > 12:
-            data = data[:12]
+        data = data[:self.SIZE]
         version, opcode, result, sec_since_epoch, self.ip_int =\
             struct.unpack("!BBHII", data)
         NATPMPResponse.__init__(self, version, opcode, result, sec_since_epoch)
@@ -197,9 +199,12 @@ class PortMapResponse(NATPMPResponse):
        NOT NECESSARILY the port requested (see the specification
        for details).
     """
+
+    SIZE = 16
+
     def __init__(self, data):
-        if len(data) > 16:
-            data = data[:16]
+        data = data[:self.SIZE]
+
         version, opcode, result, sec_since_epoch, self.private_port,\
             self.public_port, self.lifetime = struct.unpack('!BBHIHHI', data)
         NATPMPResponse.__init__(self, version, opcode, result, sec_since_epoch)
@@ -311,11 +316,13 @@ def get_public_address(gateway_ip=None, retry=9):
     """
     if gateway_ip is None:
         gateway_ip = get_gateway_addr()
+
     addr_request = PublicAddressRequest()
-    addr_response = send_request_with_retry(gateway_ip, addr_request,
-                                            response_data_class=
-                                            PublicAddressResponse,
-                                            retry=retry, response_size=12)
+    addr_response = send_request_with_retry(
+            gateway_ip, addr_request, 
+            response_data_class=PublicAddressResponse,
+            retry=retry, response_size=PublicAddressResponse.SIZE)
+
     if addr_response.result != 0:
         # sys.stderr.write("NAT-PMP error %d: %s\n" %
         #                  (addr_response.result,
@@ -391,22 +398,27 @@ def map_port(protocol, public_port, private_port, lifetime=3600,
             use_exception - throw an exception if an error result
                             is received from the gateway.  Defaults to True.
     """
+
     if protocol not in [NATPMP_PROTOCOL_UDP, NATPMP_PROTOCOL_TCP]:
         raise ValueError("Must be either NATPMP_PROTOCOL_UDP or "
                          "NATPMP_PROTOCOL_TCP")
+
     if gateway_ip is None:
         gateway_ip = get_gateway_addr()
+
     response = None
     port_mapping_request = PortMapRequest(protocol, private_port,
                                           public_port, lifetime)
-    port_mapping_response = \
-        send_request_with_retry(gateway_ip, port_mapping_request,
-                                response_data_class=PortMapResponse,
-                                retry=retry)
+    port_mapping_response = send_request_with_retry(
+            gateway_ip, port_mapping_request,
+            response_data_class=PortMapResponse,
+            retry=retry, response_size=PortMapResponse.SIZE)
+
     if port_mapping_response.result != 0 and use_exception:
         raise NATPMPResultError(port_mapping_response.result,
                                 error_str(port_mapping_response.result),
                                 port_mapping_response)
+
     return port_mapping_response
 
 
@@ -418,12 +430,14 @@ def read_response(gateway_socket, timeout, response_size=16):
     data = ""
     source_addr = ("", "")
     rlist, wlist, xlist = select.select([gateway_socket], [], [], timeout)
+
     if rlist:
         resp_socket = rlist[0]
         try:
             data, source_addr = resp_socket.recvfrom(response_size)
         except Exception:
             return None, None
+
     return data, source_addr
 
 
@@ -433,11 +447,13 @@ def send_request_with_retry(gateway_ip, request, response_data_class=None,
     n = 1
     timeout = request.initial_timeout
     data = ""
+
     while n <= retry and not data:
         send_request(gateway_socket, request)
         data, source_addr = read_response(gateway_socket,
                                           timeout,
                                           response_size=response_size)
+
         if data is None or source_addr[0] != gateway_ip or\
                 source_addr[1] != NATPMP_PORT:
             data = ""  # discard data if source mismatch, as per specification
