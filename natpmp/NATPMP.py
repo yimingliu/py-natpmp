@@ -58,6 +58,14 @@ NATPMP_RESERVED_VAL = 0
 OP_UDP = 1
 OP_TCP = 2
 
+def op_str(op):
+    if op == OP_UDP:
+        return "UDP"
+    elif op == OP_TCP:
+        return "TCP"
+
+    return None
+
 class Result:
     SUCCESS = 0  # Success
     UNSUPPORTED_VERSION = 1  # Unsupported Version
@@ -127,10 +135,10 @@ class PortMapRequest(NATPMPRequest):
         self.lifetime = lifetime
 
     def toBytes(self):
-        s = NATPMPRequest.toBytes(self) +\
-            struct.pack('!HHHI', NATPMP_RESERVED_VAL, self.private_port
-                        , self.public_port, self.lifetime)
-        return s
+        return NATPMPRequest.toBytes(self) +\
+                struct.pack('!HHHI', 
+                        NATPMP_RESERVED_VAL, self.private_port,
+                        self.public_port, self.lifetime)
 
 
 class NATPMPResponse(object):
@@ -147,10 +155,8 @@ class NATPMPResponse(object):
         self.sec_since_epoch = sec_since_epoch
         
     def __str__(self):
-        return "NATPMPResponse(%d, %d, %d, $d)".format(self.version,
-                                                       self.opcode,
-                                                       self.result,
-                                                       self.sec_since_epoch)
+        return "NATPMPResponse({}, {}, {}, {})".format(
+                self.version, self.opcode, self.result, self.sec_since_epoch)
 
 class PublicAddressResponse(NATPMPResponse):
     """Represents a NAT-PMP response from the local gateway to a
@@ -172,11 +178,10 @@ class PublicAddressResponse(NATPMPResponse):
         # self.ip  = socket.inet_ntoa(self.ip_bytes)
 
     def __str__(self):
-        return "PublicAddressResponse: version %d, opcode %d (%d)," \
-               " result %d, ssec %d, ip %s".format(self.version, self.opcode,
-                                                   self.result,
-                                                   self.sec_since_epoch,
-                                                   self.ip)
+        return "PublicAddressResponse: version {}, opcode {} ({})," \
+                " result {}, ssec {}, ip {}".format(
+                        self.version, self.opcode, op_str(self.opcode),
+                        self.result, self.sec_since_epoch, self.ip)
 
 
 class PortMapResponse(NATPMPResponse):
