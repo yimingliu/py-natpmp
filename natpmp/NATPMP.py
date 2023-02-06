@@ -402,20 +402,15 @@ def map_port(protocol, public_port, private_port, lifetime=3600,
     if gateway_ip is None:
         gateway_ip = get_gateway_addr()
 
-    response = None
-    port_mapping_request = PortMapRequest(protocol, private_port,
-                                          public_port, lifetime)
-    port_mapping_response = send_request_with_retry(
-            gateway_ip, port_mapping_request,
-            response_data_class=PortMapResponse,
+    request = PortMapRequest(protocol, private_port, public_port, lifetime)
+    response = send_request_with_retry(
+            gateway_ip, request, response_data_class=PortMapResponse,
             retry=retry, response_size=PortMapResponse.SIZE)
 
-    if port_mapping_response.result != 0 and use_exception:
-        raise NATPMPResultError(port_mapping_response.result,
-                                error_str(port_mapping_response.result),
-                                port_mapping_response)
+    if response.result != 0 and use_exception:
+        raise NATPMPResultError(response.result, error_str(response.result), response)
 
-    return port_mapping_response
+    return response
 
 
 def send_request(gateway_socket, request):
