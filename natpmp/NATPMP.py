@@ -105,7 +105,7 @@ class NATPMPRequest(object):
        
        Other requests are derived from NATPMPRequest.
     """
-    retry_increment = 0.250  # seconds
+    initial_timeout = 0.250  # seconds
 
     def __init__(self, version, opcode):
         self.version = version
@@ -431,16 +431,20 @@ def send_request_with_retry(gateway_ip, request, response_data_class=None,
                             retry=9, response_size=16):
     gateway_socket = get_gateway_socket(gateway_ip)
     n = 1
+    timeout = request.initial_timeout
     data = ""
     while n <= retry and not data:
         send_request(gateway_socket, request)
         data, source_addr = read_response(gateway_socket,
-                                          n * request.retry_increment,
+                                          timeout,
                                           response_size=response_size)
         if data is None or source_addr[0] != gateway_ip or\
                 source_addr[1] != NATPMP_PORT:
             data = ""  # discard data if source mismatch, as per specification
+
         n += 1
+        timeout *= 2
+
     if n >= retry and not data:
         raise NATPMPUnsupportedError(NATPMP_GATEWAY_NO_SUPPORT,
                                      error_str(NATPMP_GATEWAY_NO_SUPPORT))
