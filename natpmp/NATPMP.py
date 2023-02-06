@@ -464,24 +464,27 @@ def send_request_with_retry(gateway_ip, request, response_data_class=None,
     if n >= retry and not data:
         raise NATPMPUnsupportedError(NATPMP_GATEWAY_NO_SUPPORT,
                                      error_str(NATPMP_GATEWAY_NO_SUPPORT))
+
     if data and response_data_class:
         data = response_data_class(data)
+
     return data
 
 
 class NatPMP:
+    VALID_PROTOS = ["TCP", "UDP"]
+
     def __init__(self, interface="default"):
         self.interface = interface
 
     def forward_port(self, proto, src_port, dest_ip, dest_port=None):
         proto = proto.upper()
-        valid_protos = ["TCP", "UDP"]
-        if proto not in valid_protos:
-            raise Exception("Invalid protocol for forwarding.")
 
-        valid_ports = range(1, 65535)
-        if src_port not in valid_ports:
-            raise Exception("Invalid port for forwarding.")
+        if proto not in VALID_PROTOS:
+            raise Exception("Invalid protocol for forwarding: {}".format(proto))
+
+        if not is_valid_port(src_port):
+            raise Exception("Invalid port for forwarding: {}".format(src_port))
 
         # Source port is forwarded to same destination port number.
         if dest_port is None:
@@ -491,7 +494,13 @@ class NatPMP:
             proto = NATPMP_PROTOCOL_UDP
         else:
             proto = NATPMP_PROTOCOL_TCP
+
         return map_port(proto, src_port, dest_port)
+
+
+def is_valid_port(p):
+    return p in range(1, 65535)
+
 
 if __name__ == "__main__":
     """
