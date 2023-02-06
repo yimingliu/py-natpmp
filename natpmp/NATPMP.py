@@ -221,7 +221,11 @@ class PortMapResponse(NATPMPResponse):
 
 class NATPMPError(Exception):
     """Generic exception state.  May be used to represent unknown errors."""
-    pass
+
+    def __init__(self, result_code, msg, *args):
+        self.result_code = result_code
+        self.msg = msg
+        self.args = args
 
 
 class NATPMPResultError(NATPMPError):
