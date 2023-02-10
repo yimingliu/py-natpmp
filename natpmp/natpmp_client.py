@@ -1,6 +1,7 @@
 #!/usr/bin/env python
 # Yiming Liu
 # A NAT-PMP client implementation using NATPMP.py 
+from __future__ import print_function
 
 import getopt, sys
 try:
@@ -31,7 +32,7 @@ def main():
 
     if not gateway:
         gateway = NATPMP.get_gateway_addr()
-    print NATPMP.map_port(protocol, public_port, private_port, lifetime, gateway_ip=gateway)
+    print(NATPMP.map_port(protocol, public_port, private_port, lifetime, gateway_ip=gateway))
 
 if __name__=="__main__":
     main()

@@ -23,8 +23,8 @@ http://files.dns-sd.org/draft-cheshire-nat-pmp.txt
 
 """
 
-__version__ = "0.2.4"
-__license__ = """Copyright (c) 2008-2016, Yiming Liu, All rights reserved.
+__version__ = "0.2.5"
+__license__ = """Copyright (c) 2008-2023, Yiming Liu, All rights reserved.
 
 Redistribution and use in source and binary forms, with or without modification,
 are permitted provided that the following conditions are met:
