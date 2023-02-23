@@ -156,6 +156,9 @@ class NATPMPResponse(object):
         self.opcode = opcode
         self.result = result
         self.sec_since_epoch = sec_since_epoch
+
+    def is_successful(self):
+        return self.result == NATPMP_RESULT_SUCCESS
         
     def __str__(self):
         return "NATPMPResponse(%d, %d, %d, $d)".format(self.version,
