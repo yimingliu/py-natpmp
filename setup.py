@@ -1,13 +1,12 @@
 from setuptools import setup, find_packages
 import sys, os
 
-version = '0.2.4'
+version = '0.2.5'
 
 setup(name='py-natpmp',
       version=version,
       description="Python classes for interacting with NAT-PMP v0",
-      long_description="""\
-Provides functions to interact with NAT-PMP gateways implementing version 0 of the NAT-PMP draft specification.""",
+      long_description="""Provides functions to interact with NAT-PMP gateways implementing version 0 of the NAT-PMP draft specification.""",
       keywords='NAT-PMP NAT networking port port_forwarding port_mapping AirPort Apple',
       author='Yiming Liu',
       author_email='yliu@ischool.berkeley.edu',
@@ -34,6 +33,7 @@ Provides functions to interact with NAT-PMP gateways implementing version 0 of t
 
     # Specify the Python versions you support here. In particular, ensure
     # that you indicate whether you support Python 2, Python 3 or both.
+    'Programming Language :: Python :: 3',
     'Programming Language :: Python :: 2.7',
     'Topic :: System :: Networking',
     ],
