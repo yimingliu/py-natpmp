@@ -11,11 +11,11 @@ To use the client, grab it and the above library. Make sure you have the library
 
 For example:
 
-- `python natpmp-client.py -u -l 1800 60009 60009`
+- `python natpmp_client.py -u -l 1800 60009 60009`
     Create a mapping for the public UDP port 60009 to the private UDP port 60009 for 1,800 seconds (30 minutes)
-- `python natpmp-client.py 60010 60010`
+- `python natpmp_client.py 60010 60010`
     Create a mapping for the public TCP port 60010 to the private TCP port 60010
-- `python natpmp-client.py -g 10.0.1.1 60011 60022`
+- `python natpmp_client.py -g 10.0.1.1 60011 60022`
     Explicitly instruct the gateway router 10.0.1.1 to create the TCP mapping from 60010 to 60022
 
 Remember to turn off your firewall for those ports that you map.
