@@ -475,9 +475,9 @@ class NatPMP:
             dest_port = src_port
 
         if proto == "TCP":
-            proto = NATPMP_PROTOCOL_UDP
-        else:
             proto = NATPMP_PROTOCOL_TCP
+        else:
+            proto = NATPMP_PROTOCOL_UDP
         return map_port(proto, src_port, dest_port)
 
 if __name__ == "__main__":
